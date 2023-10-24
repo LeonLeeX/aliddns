@@ -12,11 +12,11 @@
 
 1. 从 Docker Hub 获取最新的镜像。
 ```bash
-docker pull lenlee/aliddns:lasted
+docker pull lenlee/aliddns:latest
 ```
 运行容器。根据实际情况设置下面的环境变量。
 ```bash
-docker run -e ACCESS_KEY=你的阿里云ACCESS_KEY -e SECRET_KEY=你的阿里云SECRET_KEY -e DOMAIN_NAME=你的域名 -e RR=二级域名记录 lenlee/aliddns:lasted
+docker run -e ACCESS_KEY=你的阿里云ACCESS_KEY -e SECRET_KEY=你的阿里云SECRET_KEY -e DOMAIN_NAME=你的域名 -e RR=二级域名记录 lenlee/aliddns:latest
 ```
 ### 使用 `docker-compose` 运行
 创建一个 docker-compose.yml 文件并添加以下内容：
@@ -24,7 +24,7 @@ docker run -e ACCESS_KEY=你的阿里云ACCESS_KEY -e SECRET_KEY=你的阿里云
 version: '3'
 services:
   aliddns:
-    image: lenlee/aliddns:lasted
+    image: lenlee/aliddns:latest
     environment:
       - ACCESS_KEY=你的阿里云ACCESS_KEY
       - SECRET_KEY=你的阿里云SECRET_KEY
