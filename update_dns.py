@@ -61,7 +61,7 @@ if __name__ == "__main__":
             if not public_ip:
                 continue
 
-            os.system('clear')  # 清除终端内容
+            # os.system('clear')  # 清除终端内容
             print("DDNS 更新脚本正在运行...\n")
             print(f"检测时间: {time.strftime('%Y-%m-%d %H:%M:%S')}")
             print(f"当前IP: {public_ip}")

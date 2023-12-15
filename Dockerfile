@@ -10,7 +10,8 @@ ENV ACCESS_KEY=""
 ENV SECRET_KEY=""
 ENV DOMAIN_NAME=""
 ENV RR=""
-
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN pip install requests aliyun-python-sdk-core aliyun-python-sdk-alidns
 
