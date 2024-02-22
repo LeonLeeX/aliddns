@@ -37,8 +37,8 @@ def update_dns(client, domain_name, rr, public_ip, record_id):
     request.set_Type("A")  # Set record type to "A"
     client.do_action_with_exception(request)
 
-def reinitialize_client():
-    return AcsClient(ACCESS_KEY, SECRET_KEY, "cn-hangzhou")
+def reinitialize_client(access_key, secret_key):
+    return AcsClient(access_key, secret_key, "cn-hangzhou")
 
 if __name__ == "__main__":
     print("DDNS 更新脚本已开始运行...\n")
@@ -47,49 +47,37 @@ if __name__ == "__main__":
     ACCESS_KEY = os.getenv("ACCESS_KEY")
     SECRET_KEY = os.getenv("SECRET_KEY")
     DOMAIN_NAME = os.getenv("DOMAIN_NAME")
-    RR = os.getenv("RR")
+    # 支持多个RR值，用逗号分隔
+    RRs = os.getenv("RR").split(',')
 
     # 初始化
     client = AcsClient(ACCESS_KEY, SECRET_KEY, "cn-hangzhou")
-    previous_ip, record_id = get_ali_record_ip(client, DOMAIN_NAME, RR)
     updates_log = []
+    previous_ips = {}
 
     while True:
-        try:
-            time.sleep(10)  # 每次循环的睡眠时间
-            public_ip = get_public_ip()
-            if not public_ip:
-                continue
+        time.sleep(10)  # 每次循环的睡眠时间
+        public_ip = get_public_ip()
+        if not public_ip:
+            continue
 
-            # os.system('clear')  # 清除终端内容
-            print("DDNS 更新脚本正在运行...\n")
-            print(f"检测时间: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-            print(f"当前IP: {public_ip}")
-            print(f"记录IP: {previous_ip}\n")
-
+        for RR in RRs:
             try:
                 current_ip, record_id = get_ali_record_ip(client, DOMAIN_NAME, RR)
                 if not current_ip:
                     raise Exception("无法获取阿里云DNS记录")
-            except (ClientException, ServerException, Exception) as e:
-                print(f"异常发生，重新初始化 AcsClient: {e}")
-                client = reinitialize_client()
-                continue
 
-            if public_ip != previous_ip:
-                try:
+                if public_ip != previous_ips.get(RR):
                     update_dns(client, DOMAIN_NAME, RR, public_ip, record_id)
-                    log_entry = f"更新时间: {time.strftime('%Y-%m-%d %H:%M:%S')}, 旧IP: {previous_ip}, 新IP: {public_ip}"
+                    log_entry = f"更新[{RR}] 时间: {time.strftime('%Y-%m-%d %H:%M:%S')}, 旧IP: {previous_ips.get(RR, '无')}, 新IP: {public_ip}"
                     updates_log.append(log_entry)
                     if len(updates_log) > 5:
                         updates_log.pop(0)
-                    previous_ip = public_ip
-                except (ClientException, ServerException) as e:
-                    print(f"DNS 更新失败: {e}")
-                    continue
+                    previous_ips[RR] = public_ip
 
-            print("\n".join(updates_log))
+            except (ClientException, ServerException, Exception) as e:
+                print(f"[{RR}] 异常发生，重新初始化 AcsClient: {e}")
+                client = reinitialize_client(ACCESS_KEY, SECRET_KEY)
+                continue
 
-        except Exception as e:
-            print(f"检测到异常: {e}")
-            time.sleep(60)  # 异常发生时的等待时间
+        print("\n".join(updates_log))
